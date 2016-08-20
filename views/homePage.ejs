@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PHONEBOOK</title>
+
+	<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- Adding AngularJS -->
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+<style>
+
+.Absolute-Center {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+.Absolute-Center.is-Responsive {
+  width: 50%; 
+  height: 85%;
+  min-width: 800px;
+  max-width: 1200px;
+  padding: 40px;
+}
+
+</style>
+
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="Absolute-Center is-Responsive">
+      <header align="center"><h3><font face="Georgia, Arial, Garamond">PHONEBOOK</font></h3></header>
+      <hr>
+      <div class="col-sm-12 col-md-10 col-md-offset-1" ng-app="myApp" ng-controller="customersCtrl">
+      	<div ng-show="showContacts">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone Number</th>
+                  <th>Address</th>
+                  <th>Email Id</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="x in records">
+                  <td>{{ x.name | uppercase  }}</td>
+                  <td>{{ x.phonenumber}}</td>
+                  <td>{{ x.address }}</td>
+                  <td>{{ x.emailid }}</td>
+                  <td><button type="button" class="btn btn-danger" ng-click="deleteNumber(x.phonenumber)">
+                        <span class="glyphicon glyphicon-trash"></span>
+                      </button></td>
+                </tr>
+              </tbody>
+            </table>
+            <hr>
+            <div class="row">
+              <div class="col-xs-6 col-md-4">
+                <button type="button" class="btn btn-info" ng-click="prevPage()" style="display:block; width: 100%;">
+                  <span class="glyphicon glyphicon-chevron-left"></span> Previous Page
+                </button>
+              </div>
+              <div class="col-xs-6 col-md-4">Current Page Number: {{ page.current + 1 }}</div>
+              <div class="col-xs-6 col-md-4">
+                <button type="button" class="btn btn-info" ng-click="nextPage()" style="display:block; width: 100%;">
+                  Next Page <span class="glyphicon glyphicon-chevron-right"></span>
+                </button>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div class="col-xs-12 col-md-12">
+                <p><a type="button" class="btn btn-success" style="display:block; width: 100%;" ng-click="toggleContactList()">Add Contacts</a></p>
+              </div>
+            </div>
+        </div>
+        <div ng-hide="showContacts">
+
+          <form class="form-horizontal">
+
+            <div class="form-group">
+              <label for="inputName" class="col-sm-4 control-label">Name</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputName" placeholder="Name" ng-model="inputName">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputNumber" class="col-sm-4 control-label">Phone Number</label>
+              <div class="col-sm-8">
+                <input type="number" class="form-control" id="inputNumber" placeholder="Phone Number" ng-model="inputNumber">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputAddress" class="col-sm-4 control-label">Address</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputAddress" placeholder="Address" ng-model="inputAddress">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputEmail" class="col-sm-4 control-label">Email</label>
+              <div class="col-sm-8">
+                <input type="email" class="form-control" id="inputEmail" placeholder="Email" ng-model="inputEmail">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10" align="center">
+                <button type="submit" class="btn btn-primary" ng-click="addContact()">
+                  <span class="glyphicon glyphicon-user"> SAVE CONTACT</span>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="row">
+              <div class="col-xs-12 col-md-12">
+                <p><a type="button" class="btn btn-success" style="display:block; width: 100%;" ng-click="toggleContactList()">Show Contacts</a></p>
+              </div>
+          </div>
+        </div>
+      </div>  
+    </div>    
+  </div>
+</div>
+
+<script>
+
+var pageNumber = 0;
+
+var app = angular.module('myApp', []);
+
+
+app.controller('customersCtrl', function($scope, $http) {
+    var numberPerPage = 5;
+
+    $http.get("/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+    .then(function (response) {
+      $scope.records = response.data.results;
+      $scope.page = response.data.pagination;
+      $scope.showContacts = "true";
+    });
+
+    $scope.toggleContactList = function(){
+      console.log("Inside toggle function");
+      $scope.showContacts = !$scope.showContacts;
+
+      $http.get("/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+      .then(function (response) {
+        $scope.records = response.data.results;
+        $scope.page = response.data.pagination;
+        // console.log($scope.page.next);
+      });
+    }
+
+    $scope.prevPage = function(){
+
+      if($scope.page.current > 0){
+        --pageNumber;
+      
+        $http.get("/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+        .then(function (response) {
+          $scope.records = response.data.results;
+          $scope.page = response.data.pagination;
+          // console.log($scope.page.next);
+        });
+      }
+    }
+
+    $scope.nextPage = function(){
+
+      if($scope.page.next != undefined){
+        ++pageNumber;
+      
+        $http.get("/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+        .then(function (response) {
+          $scope.records = response.data.results;
+          $scope.page = response.data.pagination;
+          // console.log($scope.page.next);
+        });
+      }
+    }
+
+    $scope.deleteNumber = function(removeNumber){
+
+      // console.log("Number to be deleted: "+removeNumber);
+
+      $http.delete("/deleteData", {params: {phoneNumber: removeNumber}})
+      .then(function(response){
+        console.log("Number Deleted.");
+      });
+    
+      $http.get("/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+      .then(function (response) {
+        $scope.records = response.data.results;
+        $scope.page = response.data.pagination;
+        // console.log($scope.page.next);
+      });
+    }
+
+    $scope.addContact = function(){
+      console.log("Inside Add contact function");
+      console.log("Input name:" +$scope.inputName);
+      console.log("Input number:" +$scope.inputNumber);
+      console.log("Input address:" +$scope.inputAddress);
+      console.log("Input email:" +$scope.inputEmail);
+
+      var request = $http({
+                    method: "POST",
+                    url: "/insertData",
+                    data: {
+                        name: $scope.inputName,
+                        phonenumber: $scope.inputNumber,
+                        address: $scope.inputAddress,
+                        emailid: $scope.inputEmail
+                    }
+                });
+
+      request.success(function(){
+        alert("Contact Added Successfully");
+      });
+    }
+});
+</script>
+
+</body>
+</html>

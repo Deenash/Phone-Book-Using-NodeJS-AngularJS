@@ -1,0 +1,26 @@
+{
+  "name": "ReturnPath",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js",
+    "test": "./node_modules/mocha/bin/mocha ./test/tester.js"
+  },
+  "dependencies": {
+    "bluebird": "^3.3.3",
+    "express": "~4.9.0",
+    "body-parser": "~1.8.1",
+    "ejs": "*",
+    "email-templates": "0.0.5",
+    "nodemailer": "2.2.1",
+    "node-rest-client": "1.8.0",
+    "mysql": "*",
+    "express-session": "^1.7.6",
+    "mocha": "*",
+    "chai": "*",
+    "superagent":"*"
+  },
+  "devDependencies": {
+    "mocha": "^3.0.2"
+  }
+}

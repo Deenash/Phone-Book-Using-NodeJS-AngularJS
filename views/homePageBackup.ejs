@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PHONEBOOK</title>
+
+	<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- Adding AngularJS -->
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+<style>
+
+.Absolute-Center {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+.Absolute-Center.is-Responsive {
+  width: 50%; 
+  height: 85%;
+  min-width: 800px;
+  max-width: 1200px;
+  padding: 40px;
+}
+
+</style>
+
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="Absolute-Center is-Responsive">
+      <header><h3>PHONEBOOK</h3></header>
+      <div class="col-sm-12 col-md-10 col-md-offset-1" ng-app="myApp" ng-controller="customersCtrl">
+      	
+        <div class="row">
+          <div class="col-xs-6 col-md-6">
+            <p><a href = "#viewContacts" type="button" class="btn btn-success" style="display:block; width: 100%;">View Contacts</a></p>
+          </div>
+          <div class="col-xs-6 col-md-6">
+            <p><a href = "#addContacts" type="button" class="btn btn-warning" style="display:block; width: 100%;">Add Contacts</a></p>
+          </div>
+        </div>
+
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone Number</th>
+                  <th>Address</th>
+                  <th>Email Id</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="x in records">
+                  <td>{{ x.name | uppercase  }}</td>
+                  <td>{{ x.phonenumber}}</td>
+                  <td>{{ x.address }}</td>
+                  <td>{{ x.emailid }}</td>
+                  <td><button type="button" class="btn btn-danger" ng-click="deleteNumber(x.phonenumber)">
+                        <span class="glyphicon glyphicon-trash"></span>
+                      </button></td>
+                </tr>
+              </tbody>
+            </table>
+            <hr>
+            <div class="row">
+              <div class="col-xs-6 col-md-4">
+                <button type="button" class="btn btn-info" ng-click="prevPage()" style="display:block; width: 100%;">
+                  <span class="glyphicon glyphicon-chevron-left"></span> Previous Page
+                </button>
+              </div>
+              <div class="col-xs-6 col-md-4">Current Page Number: {{ page.current + 1 }}</div>
+              <div class="col-xs-6 col-md-4">
+                <button type="button" class="btn btn-info" ng-click="nextPage()" style="display:block; width: 100%;">
+                  Next Page <span class="glyphicon glyphicon-chevron-right"></span>
+                </button>
+              </div>
+            </div>
+
+      </div>  
+    </div>    
+  </div>
+</div>
+
+<script>
+
+var pageNumber = 0;
+
+var app = angular.module('myApp', []);
+
+
+app.controller('customersCtrl', function($scope, $http) {
+    var numberPerPage = 5;
+    
+    $http.get("http://localhost:3000/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+    .then(function (response) {
+      $scope.records = response.data.results;
+      $scope.page = response.data.pagination;
+    });
+
+    $scope.prevPage = function(){
+
+      if($scope.page.current > 0){
+        --pageNumber;
+      
+        $http.get("http://localhost:3000/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+        .then(function (response) {
+          $scope.records = response.data.results;
+          $scope.page = response.data.pagination;
+          // console.log($scope.page.next);
+        });
+      }
+    }
+
+    $scope.nextPage = function(){
+
+      if($scope.page.next != undefined){
+        ++pageNumber;
+      
+        $http.get("http://localhost:3000/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+        .then(function (response) {
+          $scope.records = response.data.results;
+          $scope.page = response.data.pagination;
+          // console.log($scope.page.next);
+        });
+      }
+    }
+
+    $scope.deleteNumber = function(removeNumber){
+
+      // console.log("Number to be deleted: "+removeNumber);
+
+      $http.delete("http://localhost:3000/deleteData", {params: {phoneNumber: removeNumber}})
+      .then(function(response){
+        console.log("Number Deleted.");
+      });
+    
+      $http.get("http://localhost:3000/getPaginatedData", {params: {npp: numberPerPage, page: pageNumber}})
+      .then(function (response) {
+        $scope.records = response.data.results;
+        $scope.page = response.data.pagination;
+        // console.log($scope.page.next);
+      });
+    }
+});
+</script>
+
+</body>
+</html>
